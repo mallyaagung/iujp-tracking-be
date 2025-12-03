@@ -241,7 +241,9 @@ const ReportService = {
       });
 
       if (data.status) {
-        ws.cell(1, 1).string("Data User yang sudah report").style(titleStyle);
+        ws.cell(1, 1, 1, 6, true)
+          .string("Data User yang sudah report")
+          .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
         ws.cell(2, 2).string("Nama User").style(headerStyle);
@@ -250,7 +252,9 @@ const ReportService = {
         ws.cell(2, 5).string("Triwulan").style(headerStyle);
         ws.cell(2, 6).string("Tahun").style(headerStyle);
       } else {
-        ws.cell(1, 1).string("Data User yang belum report").style(titleStyle);
+        ws.cell(1, 1, 1, 3, true)
+          .string("Data User yang belum report")
+          .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
         ws.cell(2, 2).string("Nama User").style(headerStyle);
