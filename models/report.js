@@ -130,14 +130,16 @@ module.exports = (sequelize, DataTypes) => {
       },
       include: [
         {
-          model: sequelize.models.ReportDetail,
-          as: "detail",
-          attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
-        },
-        {
-          model: sequelize.models.User,
+          model: sequelize.models.users,
           as: "user",
           attributes: [],
+        },
+        {
+          model: sequelize.models.report_files,
+          as: "files",
+          attributes: {
+            exclude: ["createdAt", "updatedAt", "deletedAt"],
+          },
         },
       ],
     });

@@ -52,6 +52,8 @@ const ReportController = {
   getReportById: async (req, res) => {
     try {
       const newId = Buffer.from(req.params.id, "base64").toString("ascii");
+      console.log(newId);
+
       const report = await ReportService.getById(newId);
 
       return res.status(201).json({
@@ -60,6 +62,8 @@ const ReportController = {
         data: report,
       });
     } catch (error) {
+      console.log(error);
+
       return res.status(400).json({ success: false, message: error.message });
     }
   },

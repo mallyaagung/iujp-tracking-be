@@ -39,10 +39,7 @@ const ReportService = {
         where: condition,
         attributes: {
           exclude: ["createdAt", "updatedAt", "deletedAt"],
-          include: [
-            [sequelize.col("user.username"), "username"],
-            [sequelize.col("user.company_name"), "company_name"],
-          ],
+          include: [[sequelize.col("user.username"), "username"]],
         },
         include: [
           {
@@ -86,8 +83,8 @@ const ReportService = {
     }
   },
 
-  getById: async ({ id }) => {
-    const data = await reports.getDetail({
+  getById: async (id) => {
+    const [data] = await reports.getDetail({
       where: { reports_id: id },
     });
 
@@ -241,16 +238,15 @@ const ReportService = {
       });
 
       if (data.status) {
-        ws.cell(1, 1, 1, 6, true)
+        ws.cell(1, 1, 1, 5, true)
           .string("Data User yang sudah report")
           .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
         ws.cell(2, 2).string("Nama User").style(headerStyle);
-        ws.cell(2, 3).string("Nama Perusahaan").style(headerStyle);
-        ws.cell(2, 4).string("Nama Site / IUP").style(headerStyle);
-        ws.cell(2, 5).string("Triwulan").style(headerStyle);
-        ws.cell(2, 6).string("Tahun").style(headerStyle);
+        ws.cell(2, 3).string("Nama Site / IUP").style(headerStyle);
+        ws.cell(2, 4).string("Triwulan").style(headerStyle);
+        ws.cell(2, 5).string("Tahun").style(headerStyle);
       } else {
         ws.cell(1, 1, 1, 3, true)
           .string("Data User yang belum report")
@@ -268,10 +264,9 @@ const ReportService = {
             .number(count - 1)
             .style(valueStyle);
           ws.cell(count, 2).string(item.username).style(valueStyle);
-          ws.cell(count, 3).string(item.company_name).style(valueStyle);
-          ws.cell(count, 4).string(item.site_name).style(valueStyle);
-          ws.cell(count, 5).string(item.quarter).style(valueStyle);
-          ws.cell(count, 6).number(item.year).style(valueStyle);
+          ws.cell(count, 3).string(item.site_name).style(valueStyle);
+          ws.cell(count, 4).string(item.quarter).style(valueStyle);
+          ws.cell(count, 5).number(item.year).style(valueStyle);
           count++;
         } else {
           ws.cell(count, 1)
