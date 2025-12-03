@@ -2,12 +2,15 @@ require("dotenv").config();
 const { sequelize } = require("./models");
 const express = require("express");
 const cors = require("cors");
+const XLSX = require("xlsx");
+const path = require("path");
 
 const app = express();
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const reportRoutes = require("./routes/report.routes");
+const provinceRoutes = require("./routes/province.routes");
 
 // Middleware
 app.use(express.json());
@@ -17,6 +20,7 @@ app.use(cors());
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/report", reportRoutes);
+app.use("/province", provinceRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
