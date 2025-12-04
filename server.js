@@ -11,6 +11,7 @@ const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const reportRoutes = require("./routes/report.routes");
 const provinceRoutes = require("./routes/province.routes");
+const companyRoutes = require("./routes/company.routes");
 
 // Middleware
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/report", reportRoutes);
 app.use("/province", provinceRoutes);
+app.use("/company", companyRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

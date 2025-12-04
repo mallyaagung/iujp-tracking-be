@@ -1,12 +1,8 @@
 "use strict";
 const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class reports extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
       reports.belongsTo(models.users, {
         foreignKey: "users_id",
@@ -19,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
   }
+
   reports.init(
     {
       reports_id: {
@@ -29,86 +26,66 @@ module.exports = (sequelize, DataTypes) => {
       users_id: { type: DataTypes.UUID, allowNull: false },
       year: { type: DataTypes.INTEGER, allowNull: false },
       quarter: { type: DataTypes.STRING, allowNull: false },
-      site_name: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-      },
-      permission: {
-        type: DataTypes.STRING(255),
+      site_name: { type: DataTypes.STRING(255), allowNull: false },
+      permission: { type: DataTypes.STRING(255), allowNull: true },
+      province: { type: DataTypes.STRING(255), allowNull: true },
+      activity: { type: DataTypes.STRING(255), allowNull: true },
+      contract_time: { type: DataTypes.STRING(255), allowNull: true },
+
+      // VALUES
+      contract_value: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      contract_realization: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      investation: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      receive_nation: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      receive_country: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      expend_local: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      expend_national: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+      expend_import: { type: DataTypes.DECIMAL(15, 2), allowNull: true },
+
+      // CURRENCY ENUMS
+      contract_value_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      province: {
-        type: DataTypes.STRING(255),
+      contract_realization_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      activity: {
-        type: DataTypes.STRING(255),
+      investation_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      contract_time: {
-        type: DataTypes.STRING(255),
+      receive_nation_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      contract_value: {
-        type: DataTypes.DECIMAL(15, 2),
+      receive_country_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      contract_realization: {
-        type: DataTypes.DECIMAL(15, 2),
+      expend_local_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      investation: {
-        type: DataTypes.DECIMAL(15, 2),
+      expend_national_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      receive_nation: {
-        type: DataTypes.DECIMAL(15, 2),
+      expend_import_currency: {
+        type: DataTypes.ENUM("Rp", "USD"),
         allowNull: true,
       },
-      receive_country: {
-        type: DataTypes.DECIMAL(15, 2),
-        allowNull: true,
-      },
-      expend_local: {
-        type: DataTypes.DECIMAL(15, 2),
-        allowNull: true,
-      },
-      expend_national: {
-        type: DataTypes.DECIMAL(15, 2),
-        allowNull: true,
-      },
-      expend_import: {
-        type: DataTypes.DECIMAL(15, 2),
-        allowNull: true,
-      },
-      workforce_local: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      workforce_national: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      workforce_foreign_role: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      workforce_foreign_qty: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      pic: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      pic_letter_no: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      pic_letter_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-      },
+
+      // WORKFORCE
+      workforce_local: { type: DataTypes.INTEGER, allowNull: true },
+      workforce_national: { type: DataTypes.INTEGER, allowNull: true },
+      workforce_foreign_role: { type: DataTypes.STRING(255), allowNull: true },
+      workforce_foreign_qty: { type: DataTypes.INTEGER, allowNull: true },
+
+      // PIC FIELDS
+      pic: { type: DataTypes.STRING(255), allowNull: true },
+      pic_letter_no: { type: DataTypes.STRING(255), allowNull: true },
+      pic_letter_date: { type: DataTypes.DATEONLY, allowNull: true },
     },
     {
       sequelize,
@@ -118,6 +95,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // CUSTOM STATIC METHOD (UNCHANGED)
   reports.getDetail = function (condition = {}) {
     return reports.findAll({
       ...condition,
