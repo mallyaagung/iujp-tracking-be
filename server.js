@@ -18,13 +18,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.use("/auth", authRoutes);
-app.use("/user", userRoutes);
-app.use("/report", reportRoutes);
-app.use("/province", provinceRoutes);
-app.use("/company", companyRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/report", reportRoutes);
+app.use("/api/province", provinceRoutes);
+app.use("/api/company", companyRoutes);
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("API is running...");
 });
 
