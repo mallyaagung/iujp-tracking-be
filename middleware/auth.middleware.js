@@ -4,7 +4,7 @@ module.exports = (req, res, next) => {
   const header =
     req.headers.access_token ||
     req.headers.Access_token ||
-    req.headersg["Authorization"];
+    req.headers["Authorization"];
 
   console.log(req.headers);
   console.log(header);
