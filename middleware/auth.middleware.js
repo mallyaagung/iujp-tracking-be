@@ -3,6 +3,7 @@ const { verifyToken } = require("../utils/jwt");
 module.exports = (req, res, next) => {
   const header = req.headers.access_token || req.headers.Access_token;
 
+  console.log(req.headers);
   console.log(header);
 
   if (!header || !header.startsWith("Bearer ")) {
