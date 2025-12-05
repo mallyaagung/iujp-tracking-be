@@ -16,7 +16,12 @@ const companyRoutes = require("./routes/company.routes");
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://laporiujp.com",
+    allowedHeaders: ["Content-Type", "Authorization", "Access-Token"],
+  })
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
