@@ -1,7 +1,10 @@
 const { verifyToken } = require("../utils/jwt");
 
 module.exports = (req, res, next) => {
-  const header = req.headers.access_token || req.headers.Access_token;
+  const header =
+    req.headers.access_token ||
+    req.headers.Access_token ||
+    req.headersg["Authorization"];
 
   console.log(req.headers);
   console.log(header);
