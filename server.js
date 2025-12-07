@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: "https://laporiujp.com",
+    // origin: ["https://laporiujp.com", "http://localhost:3000"], //untuk dev
     allowedHeaders: ["Content-Type", "Authorization", "Access-Token"],
   })
 );

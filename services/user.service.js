@@ -30,7 +30,7 @@ const UserService = {
       desc: "DESC",
     };
 
-    const querySort = arrSort[sort] || arrSort.username;
+    const querySort = arrSort[sort] || arrSort.company;
     const querySortType = arrSortType[sortType] || arrSortType.asc;
     const limit = Number(pageSize) || 10;
     const current_Page = currentPage || 1;
