@@ -1,11 +1,19 @@
 const { Op } = require("sequelize");
-const getCurrentQuarter = require("../helper/getQuarter");
 const totalPage = require("../helper/totalPage");
 const { reports, report_files, users, sequelize } = require("../models");
 const excel4node = require("excel4node");
 
 const ReportService = {
-  getAll: async ({ sort, sortType, pageSize, currentPage, id }) => {
+  getAll: async ({
+    sort,
+    sortType,
+    pageSize,
+    currentPage,
+    id,
+    dateTo,
+    dateFrom,
+    search,
+  }) => {
     try {
       const arrSort = {
         createdAt: "createdAt",
@@ -29,7 +37,16 @@ const ReportService = {
         where: { users_id: userId },
       });
 
-      let condition = {};
+      let condition = {
+        createdAt: {
+          [Op.gte]: dateFrom,
+          [Op.lte]: dateTo,
+        },
+      };
+
+      if (search) {
+        condition.site_name = { [Op.substring]: search.toUpperCase() };
+      }
 
       if (checkUser.role === "USER") {
         condition.users_id = checkUser.users_id;
@@ -93,8 +110,17 @@ const ReportService = {
     return data;
   },
 
-  getReportSubmissionStats: async ({ year, quarter }) => {
+  getReportSubmissionStats: async ({
+    year,
+    quarter,
+    pageSize,
+    currentPage,
+  }) => {
     try {
+      const limit = Number(pageSize) || 10;
+      const current_Page = currentPage || 1;
+      const offset = (current_Page - 1) * limit;
+
       // total users
       const totalUsers = await users.count();
 
@@ -103,7 +129,6 @@ const ReportService = {
         distinct: true,
         col: "users_id",
         where: { year, quarter },
-        logging: true,
       });
 
       const dataSubmit = await reports.findAll({
@@ -122,22 +147,40 @@ const ReportService = {
             as: "user",
           },
         ],
+        order: [["site_name", "ASC"]],
+        limit,
+        offset,
+        subQuery: false,
       });
 
-      const usersId = dataSubmit.map((item) => item.users_id);
       // users that have NOT submitted
       const notSubmittedUsers = totalUsers - submittedUsers;
 
-      let condition = {};
-      if (submittedUsers > 0) {
-        condition.users_id = {
-          [Op.notIn]: usersId.length > 0 ? usersId : [""],
-        };
-      }
-
       const dataNotSubmit = await users.findAll({
-        where: condition,
+        where: {
+          users_id: {
+            [Op.notIn]: sequelize.literal(`
+        (SELECT users_id FROM reports WHERE year = ${year} AND quarter = '${quarter}')
+      `),
+          },
+        },
+        order: [["company_name", "ASC"]],
+        limit,
+        offset,
+        subQuery: false,
       });
+
+      const metaSubmitted = {
+        currentPage: Number(current_Page),
+        pageCount: totalPage(submittedUsers, limit),
+        pageSize: limit,
+      };
+
+      const metaNotSubmitted = {
+        currentPage: Number(current_Page),
+        pageCount: totalPage(notSubmittedUsers, limit),
+        pageSize: limit,
+      };
 
       return {
         year,
@@ -147,6 +190,8 @@ const ReportService = {
         notSubmittedUsers,
         dataSubmit,
         dataNotSubmit,
+        metaSubmitted,
+        metaNotSubmitted,
       };
     } catch (error) {
       console.log(error);
@@ -154,7 +199,7 @@ const ReportService = {
     }
   },
 
-  exportReport: async (data) => {
+  exportReport: async (data, year, quarter) => {
     try {
       const wb = new excel4node.Workbook({ author: "Ayam Goreng Kalasan" });
       const ws = wb.addWorksheet("Sheet 1");
@@ -237,45 +282,63 @@ const ReportService = {
         },
       });
 
+      const dataSubmit = await users.findAll({
+        attributes: [
+          [sequelize.col("users.users_id"), "users_id"],
+          "username",
+          "company_name",
+          [sequelize.col("reports.site_name"), "site_name"],
+        ],
+        include: [
+          {
+            model: sequelize.models.reports,
+            attributes: [],
+            as: "reports",
+            required: false,
+            where: { year, quarter },
+          },
+        ],
+        raw: true,
+      });
+
       if (data.status) {
         ws.cell(1, 1, 1, 5, true)
-          .string("Data User yang sudah report")
+          .string(
+            `Data User yang sudah report tahun ${year} kuartal ${quarter}`
+          )
           .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
-        ws.cell(2, 2).string("Nama User").style(headerStyle);
+        ws.cell(2, 2).string("Username").style(headerStyle);
         ws.cell(2, 3).string("Nama Site / IUP").style(headerStyle);
-        ws.cell(2, 4).string("Triwulan").style(headerStyle);
-        ws.cell(2, 5).string("Tahun").style(headerStyle);
       } else {
         ws.cell(1, 1, 1, 3, true)
-          .string("Data User yang belum report")
+          .string(
+            `Data User yang belum report tahun ${year} kuartal ${quarter}`
+          )
           .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
-        ws.cell(2, 2).string("Nama User").style(headerStyle);
+        ws.cell(2, 2).string("Username").style(headerStyle);
         ws.cell(2, 3).string("Nama Perusahaan").style(headerStyle);
       }
 
       let count = 3;
-      for (const item of data.data) {
-        if (data.status) {
-          ws.cell(count, 1)
-            .number(count - 1)
-            .style(valueStyle);
-          ws.cell(count, 2).string(item.username).style(valueStyle);
-          ws.cell(count, 3).string(item.site_name).style(valueStyle);
-          ws.cell(count, 4).string(item.quarter).style(valueStyle);
-          ws.cell(count, 5).number(item.year).style(valueStyle);
-          count++;
-        } else {
-          ws.cell(count, 1)
-            .number(count - 1)
-            .style(valueStyle);
-          ws.cell(count, 2).string(item.username).style(valueStyle);
-          ws.cell(count, 3).string(item.company_name).style(valueStyle);
-          count++;
-        }
+      for (const item of dataSubmit) {
+        const shouldInclude =
+          (data.status && item.site_name) || (!data.status && !item.site_name);
+
+        if (!shouldInclude) continue;
+
+        const col3 = data.status ? item.site_name : item.company_name;
+
+        ws.cell(count, 1)
+          .number(count - 2)
+          .style(valueStyle);
+        ws.cell(count, 2).string(item.username).style(valueStyle);
+        ws.cell(count, 3).string(col3).style(valueStyle);
+
+        count++;
       }
 
       return wb;

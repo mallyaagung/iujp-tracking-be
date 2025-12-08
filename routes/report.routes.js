@@ -7,7 +7,15 @@ const router = express.Router();
 router.post(
   "/create",
   auth,
-  upload.array("files"),
+  (req, res, next) => {
+    upload.array("files")(req, res, function (err) {
+      if (err) {
+        // This catches fileFilter errors & fileSize errors
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      next(); // continue to controller
+    });
+  },
   ReportController.createReport
 );
 router.post("/export", auth, ReportController.exportReportSubmission);

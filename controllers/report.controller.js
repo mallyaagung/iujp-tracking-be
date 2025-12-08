@@ -9,12 +9,15 @@ const ReportController = {
 
       const result = await ReportService.create(payload, files);
 
-      return res.status(201).json(result);
+      return res.status(201).json({
+        success: true,
+        message: "Success create report",
+      });
     } catch (err) {
-      console.error("Create Report Error:", err);
-      return res.status(500).json({
-        error: "Failed to create report",
-        details: err.message,
+      console.log("Create Report Error:", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message,
       });
     }
   },
@@ -72,21 +75,21 @@ const ReportController = {
     try {
       const report = await ReportService.getReportSubmissionStats(req.query);
 
-      return res.status(201).json({
+      return res.status(200).send({
         success: true,
         message: "Success get report by id",
         data: report,
       });
     } catch (error) {
       console.log(error);
-
-      return res.status(400).json({ success: false, message: error.message });
+      return res.status(400).send({ success: false, message: error.message });
     }
   },
 
   exportReportSubmission: async (req, res) => {
     try {
-      const report = await ReportService.exportReport(req.body);
+      const { year, quarter } = req.query;
+      const report = await ReportService.exportReport(req.body, year, quarter);
       const fileBuffer = await report.writeToBuffer();
 
       const readStream = new stream.PassThrough();
