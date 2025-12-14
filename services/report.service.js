@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const totalPage = require("../helper/totalPage");
 const { reports, report_files, users, sequelize } = require("../models");
 const excel4node = require("excel4node");
+const moment = require("moment");
 
 const ReportService = {
   getAll: async ({
@@ -39,8 +40,8 @@ const ReportService = {
 
       let condition = {
         createdAt: {
-          [Op.gte]: dateFrom,
-          [Op.lte]: dateTo,
+          [Op.gte]: moment(dateFrom).format("YYYY-MM-DD"),
+          [Op.lte]: moment(dateTo).format("YYYY-MM-DD"),
         },
       };
 
@@ -69,6 +70,7 @@ const ReportService = {
         offset,
         limit,
         subQuery: false,
+        // logging: true,
       });
 
       const totalData = await reports.count({
@@ -352,16 +354,26 @@ const ReportService = {
     const transaction = await sequelize.transaction();
 
     try {
-      const report = await reports.create(payload, { transaction });
+      const parsed = JSON.parse(payload);
 
-      if (files?.length) {
-        const fileRows = files.map((file) => ({
-          reports_id: report.reports_id,
-          file_name: file.originalname,
-          mime_type: file.mimetype,
-          file_buffer: file.buffer,
-        }));
+      let fileRows = [];
 
+      for (const item of parsed) {
+        const report = await reports.create(item, { transaction });
+
+        const newFile = files.find((f) => f.fieldname.includes(item.temp_id));
+
+        if (newFile) {
+          fileRows.push({
+            reports_id: report.reports_id,
+            file_name: newFile.originalname,
+            mime_type: newFile.mimetype,
+            file_buffer: newFile.buffer,
+          });
+        }
+      }
+
+      if (fileRows.length > 0) {
         await report_files.bulkCreate(fileRows, { transaction });
       }
 
@@ -369,7 +381,6 @@ const ReportService = {
 
       return {
         message: "Report created successfully",
-        reports_id: report.reports_id,
       };
     } catch (err) {
       await transaction.rollback();

@@ -4,7 +4,7 @@ const stream = require("stream");
 const ReportController = {
   createReport: async (req, res) => {
     try {
-      const payload = req.body;
+      const payload = req.body.payload;
       const files = req.files; // from multer
 
       const result = await ReportService.create(payload, files);

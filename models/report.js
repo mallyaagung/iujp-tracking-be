@@ -26,11 +26,11 @@ module.exports = (sequelize, DataTypes) => {
       users_id: { type: DataTypes.UUID, allowNull: false },
       year: { type: DataTypes.INTEGER, allowNull: false },
       quarter: { type: DataTypes.STRING, allowNull: false },
-      site_name: { type: DataTypes.STRING(255), allowNull: false },
+      site_name: { type: DataTypes.STRING(255), allowNull: true },
       permission: { type: DataTypes.STRING(255), allowNull: true },
       province: { type: DataTypes.STRING(255), allowNull: true },
       activity: { type: DataTypes.STRING(255), allowNull: true },
-      contract_time: { type: DataTypes.STRING(255), allowNull: true },
+      contract_time: { type: DataTypes.DATE, allowNull: true },
 
       // VALUES
       contract_value: { type: DataTypes.DECIMAL(15, 2), allowNull: true },

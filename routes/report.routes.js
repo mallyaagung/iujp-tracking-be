@@ -8,7 +8,7 @@ router.post(
   "/create",
   auth,
   (req, res, next) => {
-    upload.array("files")(req, res, function (err) {
+    upload.any()(req, res, function (err) {
       if (err) {
         // This catches fileFilter errors & fileSize errors
         return res.status(400).json({ success: false, message: err.message });
