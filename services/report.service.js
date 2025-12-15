@@ -2,7 +2,6 @@ const { Op } = require("sequelize");
 const totalPage = require("../helper/totalPage");
 const { reports, report_files, users, sequelize } = require("../models");
 const excel4node = require("excel4node");
-const moment = require("moment");
 
 const ReportService = {
   getAll: async ({
@@ -11,8 +10,8 @@ const ReportService = {
     pageSize,
     currentPage,
     id,
-    dateTo,
-    dateFrom,
+    year,
+    quarter,
     search,
   }) => {
     try {
@@ -39,10 +38,8 @@ const ReportService = {
       });
 
       let condition = {
-        createdAt: {
-          [Op.gte]: moment(dateFrom).format("YYYY-MM-DD"),
-          [Op.lte]: moment(dateTo).format("YYYY-MM-DD"),
-        },
+        year,
+        quarter,
       };
 
       if (search) {
@@ -359,6 +356,18 @@ const ReportService = {
       let fileRows = [];
 
       for (const item of parsed) {
+        const checkReport = await reports.findOne({
+          where: {
+            users_id: item.users_id,
+            site_name: item.site_name,
+            year: item.year,
+            quarter: item.quarter,
+          },
+          attributes: ["reports_id"],
+        });
+
+        if (checkReport) continue;
+
         const report = await reports.create(item, { transaction });
 
         const newFile = files.find((f) => f.fieldname.includes(item.temp_id));
