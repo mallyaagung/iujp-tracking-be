@@ -54,7 +54,10 @@ const ReportService = {
         where: condition,
         attributes: {
           exclude: ["createdAt", "updatedAt", "deletedAt"],
-          include: [[sequelize.col("user.username"), "username"]],
+          include: [
+            [sequelize.col("user.username"), "username"],
+            [sequelize.col("user.company_name"), "company_name"],
+          ],
         },
         include: [
           {
