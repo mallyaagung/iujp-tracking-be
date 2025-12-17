@@ -135,25 +135,38 @@ const ReportService = {
 
       const dataSubmit = await reports.findAll({
         where: { year, quarter },
-        attributes: {
-          include: [
-            [sequelize.col("user.username"), "username"],
-            [sequelize.col("user.company_name"), "company_name"],
+        attributes: [
+          "users_id",
+
+          // aggregated report info
+          [sequelize.fn("MAX", sequelize.col("reports.year")), "year"],
+          [sequelize.fn("MAX", sequelize.col("reports.quarter")), "quarter"],
+
+          // user info
+          [sequelize.col("user.username"), "username"],
+          [sequelize.col("user.company_name"), "company_name"],
+
+          // example metric
+          [
+            sequelize.fn("COUNT", sequelize.col("reports.users_id")),
+            "total_reports",
           ],
-          exclude: ["createdAt", "updatedAt", "deletedAt"],
-        },
+        ],
         include: [
           {
             model: sequelize.models.users,
-            attributes: [],
             as: "user",
+            attributes: [],
           },
         ],
-        order: [["site_name", "ASC"]],
+        group: ["reports.users_id", "user.username", "user.company_name"],
+        order: [[sequelize.col("user.username"), "ASC"]],
         limit,
         offset,
         subQuery: false,
       });
+
+      console.log(dataSubmit);
 
       // users that have NOT submitted
       const notSubmittedUsers = totalUsers - submittedUsers;
@@ -306,23 +319,22 @@ const ReportService = {
       if (data.status) {
         ws.cell(1, 1, 1, 5, true)
           .string(
-            `Data User yang sudah report tahun ${year} kuartal ${quarter}`
+            `Data user yang sudah report tahun ${year} kuartal ${quarter}`
           )
           .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
-        ws.cell(2, 2).string("Username").style(headerStyle);
+        ws.cell(2, 2).string("Nama Perusahaan").style(headerStyle);
         ws.cell(2, 3).string("Nama Site / IUP").style(headerStyle);
       } else {
         ws.cell(1, 1, 1, 3, true)
           .string(
-            `Data User yang belum report tahun ${year} kuartal ${quarter}`
+            `Data user yang belum report tahun ${year} kuartal ${quarter}`
           )
           .style(titleStyle);
         //===============
         ws.cell(2, 1).string("No.").style(headerStyle);
-        ws.cell(2, 2).string("Username").style(headerStyle);
-        ws.cell(2, 3).string("Nama Perusahaan").style(headerStyle);
+        ws.cell(2, 2).string("Nama Perusahaan").style(headerStyle);
       }
 
       let count = 3;
@@ -332,13 +344,18 @@ const ReportService = {
 
         if (!shouldInclude) continue;
 
-        const col3 = data.status ? item.site_name : item.company_name;
-
-        ws.cell(count, 1)
-          .number(count - 2)
-          .style(valueStyle);
-        ws.cell(count, 2).string(item.username).style(valueStyle);
-        ws.cell(count, 3).string(col3).style(valueStyle);
+        if (data.status) {
+          ws.cell(count, 1)
+            .number(count - 2)
+            .style(valueStyle);
+          ws.cell(count, 2).string(item.company_name).style(valueStyle);
+          ws.cell(count, 3).string(item.site_name).style(valueStyle);
+        } else {
+          ws.cell(count, 1)
+            .number(count - 2)
+            .style(valueStyle);
+          ws.cell(count, 2).string(item.company_name).style(valueStyle);
+        }
 
         count++;
       }
