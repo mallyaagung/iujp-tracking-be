@@ -63,7 +63,7 @@ const UserService = {
 
   getById: async (id) => {
     const data = await users.findOne({
-      where: { user_id: id },
+      where: { users_id: id },
     });
 
     if (!data) throw new Error("Data user tidak ditemukan");
@@ -73,7 +73,7 @@ const UserService = {
 
   update: async (id, payload) => {
     const data = await users.findOne({
-      where: { user_id: id },
+      where: { users_id: id },
     });
 
     if (!data) throw new Error("Data user tidak ditemukan");
@@ -85,7 +85,7 @@ const UserService = {
 
   delete: async (id) => {
     const data = await users.findOne({
-      where: { user_id: id },
+      where: { users_id: id },
     });
 
     if (!data) throw new Error("Data user tidak ditemukan");

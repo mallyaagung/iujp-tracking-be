@@ -37,55 +37,68 @@ const ReportService = {
         where: { users_id: userId },
       });
 
-      let condition = {
-        year,
-        quarter,
-      };
+      let condition = {};
 
       if (search) {
-        condition.site_name = { [Op.substring]: search.toUpperCase() };
+        condition.company_name = { [Op.substring]: search.toUpperCase() };
       }
 
       if (checkUser.role === "USER") {
         condition.users_id = checkUser.users_id;
       }
 
-      const data = await reports.findAll({
+      const data = await users.findAll({
         where: condition,
         attributes: {
-          exclude: ["createdAt", "updatedAt", "deletedAt"],
+          exclude: [
+            "createdAt",
+            "updatedAt",
+            "deletedAt",
+            "username",
+            "password",
+            "role",
+          ],
           include: [
-            [sequelize.col("user.username"), "username"],
-            [sequelize.col("user.company_name"), "company_name"],
+            [
+              sequelize.fn("COUNT", sequelize.col("reports.reports_id")),
+              "report_count",
+            ],
           ],
         },
         include: [
           {
-            model: sequelize.models.users,
+            model: sequelize.models.reports,
+            as: "reports",
             attributes: [],
-            as: "user",
+            where: {
+              year,
+              quarter,
+            },
           },
         ],
-        order: [[querySort, querySortType]],
-        offset,
+        group: ["users.users_id"],
+        order: [["company_name", "ASC"]],
         limit,
+        offset,
         subQuery: false,
-        // logging: true,
       });
 
-      const totalData = await reports.count({
+      const totalData = await users.count({
         where: condition,
-        attributes: {
-          exclude: ["createdAt", "updatedAt"],
-        },
         include: [
           {
-            model: sequelize.models.users,
+            model: sequelize.models.reports,
+            as: "reports",
             attributes: [],
-            as: "user",
+            where: {
+              year,
+              quarter,
+            },
+            required: true,
           },
         ],
-        col: "reports_id",
+        distinct: true,
+        col: "users_id",
       });
 
       const meta = {
@@ -103,8 +116,8 @@ const ReportService = {
   },
 
   getById: async (id) => {
-    const [data] = await reports.getDetail({
-      where: { reports_id: id },
+    const data = await reports.getDetail({
+      where: { users_id: id },
     });
 
     if (!data) throw new Error("Data laporan tidak ditemukan");

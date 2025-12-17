@@ -120,6 +120,7 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       ],
+      order: [[sequelize.col("reports.site_name"), "ASC"]],
     });
   };
 
