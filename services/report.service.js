@@ -443,15 +443,15 @@ const ReportService = {
   },
 
   delete: async (id) => {
-    const data = await reports.findOne({
-      where: { reports_id: id },
+    const deletedCount = await reports.destroy({
+      where: { users_id: id },
     });
 
-    if (!data) throw new Error("Data user tidak ditemukan");
+    if (deletedCount === 0) {
+      throw new Error("Data user tidak ditemukan");
+    }
 
-    await data.destroy();
-
-    return data;
+    return deletedCount;
   },
 };
 
