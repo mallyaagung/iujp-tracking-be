@@ -55,9 +55,9 @@ const ReportController = {
   getReportById: async (req, res) => {
     try {
       const newId = Buffer.from(req.params.id, "base64").toString("ascii");
-      console.log(newId);
+      const { year, quarter } = req.query;
 
-      const report = await ReportService.getById(newId);
+      const report = await ReportService.getById(newId, year, quarter);
 
       return res.status(201).json({
         success: true,

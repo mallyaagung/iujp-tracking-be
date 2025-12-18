@@ -115,9 +115,9 @@ const ReportService = {
     }
   },
 
-  getById: async (id) => {
+  getById: async (id, year, quarter) => {
     const data = await reports.getDetail({
-      where: { users_id: id },
+      where: { users_id: id, year, quarter },
     });
 
     if (!data) throw new Error("Data laporan tidak ditemukan");
